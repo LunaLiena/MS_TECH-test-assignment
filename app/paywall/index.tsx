@@ -4,12 +4,12 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { PaywallView as PaywallViewWeb } from './PaywallView.web';
-import { PaywallView as PaywallViewNative } from './PaywallView.native';
+import PaywallView from './PaywallView.native';
 
 export default function PaywallScreen() {
 
   if (Platform.OS === 'web') {
     return <PaywallViewWeb />;
   }
-  return <PaywallViewNative />;
+  return <PaywallView />;
 }
