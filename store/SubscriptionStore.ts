@@ -1,10 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { storage } from './Storage';
 
 const KEY = "@subscription_active";
 
 export const isSubscribed = async (): Promise<boolean> => {
   try {
-    const value = await AsyncStorage.getItem(KEY);
+    const value = await storage.getItem(KEY);
     return value === 'true';
   } catch (error) {
     console.error("Error checking subscription status:", error);
@@ -13,9 +14,9 @@ export const isSubscribed = async (): Promise<boolean> => {
 };
 
 export const setSubscribed = async (active: boolean): Promise<void> => {
-  await AsyncStorage.setItem(KEY, active ? 'true' : 'false');
+  await storage.setItem(KEY, active ? 'true' : 'false');
 }
 
 export const resetSubscription = async (): Promise<void> => {
-  await AsyncStorage.removeItem(KEY);
+  await storage.removeItem(KEY);
 };

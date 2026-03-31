@@ -1,48 +1,52 @@
-import { router } from 'expo-router';
+// app/paywall/PaywallView.native.tsx
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-
-import { setSubscribed } from '@/store/SubscriptionStore';
+import { router } from 'expo-router';
+import { SubscriptionService } from '@/services/SubscriptionService';
 
 type Plan = 'month' | 'year';
 
-export default function PaywallScreen() {
+export default function PaywallView() {
   const [selected, setSelected] = useState<Plan>('year');
 
   const handleSubscribe = async () => {
-    // 🔥 Эмуляция покупки: просто сохраняем подписку
-    await setSubscribed(true);
-    // ✅ Переходим на главный экран
+    await SubscriptionService.activateSubscription(selected);
     router.replace('/main');
   };
+
+  const plans = {
+    month: { price: '$9.99', period: '/мес', discount: null },
+    year: { price: '$79.99', period: '/год', discount: '−33%' },
+  } as const;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Выберите подписку</Text>
       <Text style={styles.subtitle}>Доступ ко всем функциям</Text>
 
-      {/* Месяц */}
-      <TouchableOpacity
-        style={[styles.plan, selected === 'month' && styles.planSelected]}
-        onPress={() => setSelected('month')}
-      >
-        <Text style={styles.planName}>Месяц</Text>
-        <Text style={styles.planPrice}>$9.99<Text style={styles.period}>/мес</Text></Text>
-      </TouchableOpacity>
+      {(Object.entries(plans) as [Plan, typeof plans[Plan]][]).map(([key, plan]) => (
+        <TouchableOpacity
+          key={key}
+          style={[styles.plan, selected === key && styles.planSelected]}
+          onPress={() => setSelected(key)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.planHeader}>
+            <Text style={styles.planName}>{key === 'month' ? 'Месяц' : 'Год'}</Text>
+            {plan.discount && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{plan.discount}</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.planPrice}>
+            {plan.price}
+            <Text style={styles.planPeriod}>{plan.period}</Text>
+          </Text>
+        </TouchableOpacity>
+      ))}
 
-      {/* Год со скидкой */}
-      <TouchableOpacity
-        style={[styles.plan, selected === 'year' && styles.planSelected]}
-        onPress={() => setSelected('year')}
-      >
-        <View style={styles.planHeader}>
-          <Text style={styles.planName}>Год</Text>
-          <View style={styles.badge}><Text style={styles.badgeText}>−33%</Text></View>
-        </View>
-        <Text style={styles.planPrice}>$79.99<Text style={styles.period}>/год</Text></Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleSubscribe}>
+      <TouchableOpacity style={styles.button} onPress={handleSubscribe} activeOpacity={0.7}>
         <Text style={styles.buttonText}>Продолжить</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -66,7 +70,7 @@ const styles = StyleSheet.create({
   planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   planName: { fontSize: 18, fontWeight: '600' },
   planPrice: { fontSize: 24, fontWeight: 'bold' },
-  period: { fontSize: 14, color: '#666', fontWeight: 'normal' },
+  planPeriod: { fontSize: 14, color: '#666', fontWeight: 'normal' },
   badge: { backgroundColor: '#4CAF50', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
   badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   button: {
